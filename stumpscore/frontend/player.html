@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <title>StumpScore - Player Profile</title>
+  <link rel="stylesheet" href="style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<script>
+  const pageType = "player";
+</script>
+<script src="nav.js"></script>
+<body>
+    
+  <main class="page">
+   
+
+    <section class="hero-layout" style="margin-top: 8px;">
+      <section class="hero-card">
+        <span class="eyebrow">PLAYER PROFILE</span>
+        <h2 id="playerName">Loading player...</h2>
+        <p id="playerMeta" class="hero-status">Fetching player details...</p>
+
+        <div class="hero-scoreboard" id="playerOverview">
+          <div class="score-row">
+            <span>Role</span>
+            <strong>Loading</strong>
+          </div>
+        </div>
+      </section>
+
+      <aside class="feature-card">
+        <span class="eyebrow">PLAYER INFO</span>
+        <h3 id="countryText">Country</h3>
+        <p id="styleText">Batting and bowling styles loading...</p>
+      </aside>
+    </section>
+
+    <section class="content-grid">
+      <section>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">FORMAT STATS</span>
+            <h2>Career Numbers</h2>
+          </div>
+        </div>
+        <div id="statsGrid" class="players-grid"></div>
+      </section>
+
+      <aside>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">CAREER</span>
+            <h2>Summary</h2>
+          </div>
+        </div>
+        <div id="careerBox" class="search-results"></div>
+      </aside>
+    </section>
+
+    <section class="section-head">
+      <div>
+        <span class="eyebrow">RECENT MATCHES</span>
+        <h2>Match History</h2>
+      </div>
+    </section>
+    <section id="matchesGrid" class="cards-grid"></section>
+  </main>
+
+  <script>
+    const API = "http://127.0.0.1:9966";
+    const params = new URLSearchParams(window.location.search);
+    const playerId = params.get("id");
+
+    async function api(path) {
+      const res = await fetch(`${API}${path}`);
+      if (!res.ok) throw new Error(`Request failed: ${path}`);
+      return res.json();
+    }
+
+    function renderOverview(player) {
+      document.getElementById("playerName").textContent = player.name || "Player";
+      document.getElementById("playerMeta").textContent = `${player.country || ""} â€¢ ${player.role || ""}`;
+      document.getElementById("countryText").textContent = player.country || "Country";
+      document.getElementById("styleText").textContent =
+        `${player.battingStyle || "Batting style N/A"} â€¢ ${player.bowlingStyle || "Bowling style N/A"}`;
+
+      document.getElementById("playerOverview").innerHTML = `
+        <div class="score-row">
+          <span>Role</span>
+          <strong>${player.role || "Player"}</strong>
+        </div>
+        <div class="score-row">
+          <span>Batting</span>
+          <strong>${player.battingStyle || "N/A"}</strong>
+        </div>
+        <div class="score-row">
+          <span>Bowling</span>
+          <strong>${player.bowlingStyle || "N/A"}</strong>
+        </div>
+      `;
+    }
+
+    function renderStats(stats) {
+      const root = document.getElementById("statsGrid");
+      root.innerHTML = `
+        <article class="player-card">
+          <h4>T20 Career</h4>
+          <div class="player-country">T20</div>
+          <div class="score-box">
+            <div class="score-row"><span>Matches</span><strong>${stats.t20.matches}</strong></div>
+            <div class="score-row"><span>Runs</span><strong>${stats.t20.runs}</strong></div>
+            <div class="score-row"><span>Wickets</span><strong>${stats.t20.wickets}</strong></div>
+          </div>
+        </article>
+
+        <article class="player-card">
+          <h4>ODI Career</h4>
+          <div class="player-country">ODI</div>
+          <div class="score-box">
+            <div class="score-row"><span>Matches</span><strong>${stats.odi.matches}</strong></div>
+            <div class="score-row"><span>Runs</span><strong>${stats.odi.runs}</strong></div>
+            <div class="score-row"><span>Wickets</span><strong>${stats.odi.wickets}</strong></div>
+          </div>
+        </article>
+
+        <article class="player-card">
+          <h4>Test Career</h4>
+          <div class="player-country">TEST</div>
+          <div class="score-box">
+            <div class="score-row"><span>Matches</span><strong>${stats.test.matches}</strong></div>
+            <div class="score-row"><span>Runs</span><strong>${stats.test.runs}</strong></div>
+            <div class="score-row"><span>Wickets</span><strong>${stats.test.wickets}</strong></div>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderCareer(data) {
+      const career = data.career || {};
+      const awards = (career.awards || []).length ? career.awards.join(", ") : "No awards added yet";
+      const milestones = (career.milestones || []).length ? career.milestones.join(", ") : "No milestones added yet";
+
+      document.getElementById("careerBox").innerHTML = `
+        <div class="search-block">
+          <h4>Debut</h4>
+          <div class="search-item">${career.debut || "Not available"}</div>
+        </div>
+        <div class="search-block">
+          <h4>Best Performance</h4>
+          <div class="search-item">${career.bestPerformance || "Not available"}</div>
+        </div>
+        <div class="search-block">
+          <h4>Awards</h4>
+          <div class="search-item">${awards}</div>
+        </div>
+        <div class="search-block">
+          <h4>Milestones</h4>
+          <div class="search-item">${milestones}</div>
+        </div>
+      `;
+    }
+
+    function renderMatches(data) {
+      const root = document.getElementById("matchesGrid");
+      const matches = data.recentMatches || [];
+
+      if (!matches.length) {
+        root.innerHTML = `<div class="empty">No recent matches available.</div>`;
+        return;
+      }
+
+      root.innerHTML = matches.map(m => `
+        <article class="match-card">
+          <div class="card-top">
+            <span class="match-status-pill"><span class="live-dot"></span> ${m.format || "Match"}</span>
+            <span class="match-type">${m.match_id || ""}</span>
+          </div>
+          <h4 class="match-title">vs ${m.opponent || "Opponent"}</h4>
+          <p class="meta">Recent appearance</p>
+        </article>
+      `).join("");
+    }
+
+    async function loadPlayer() {
+      try {
+        const [player, stats, matches, career] = await Promise.all([
+          api(`/players/${playerId}`),
+          api(`/players/${playerId}/stats`),
+          api(`/players/${playerId}/matches`),
+          api(`/players/${playerId}/career`)
+        ]);
+
+        renderOverview(player);
+        renderStats(stats);
+        renderCareer(career);
+        renderMatches(matches);
+      } catch (err) {
+        console.error(err);
+        document.getElementById("playerName").textContent = "Player not found";
+        document.getElementById("playerMeta").textContent = "Could not load this player profile.";
+        document.getElementById("statsGrid").innerHTML = `<div class="empty">Stats unavailable.</div>`;
+        document.getElementById("careerBox").innerHTML = `<div class="empty">Career summary unavailable.</div>`;
+        document.getElementById("matchesGrid").innerHTML = `<div class="empty">Recent matches unavailable.</div>`;
+      }
+    }
+
+    loadPlayer();
+  </script>
+
+<footer class="stats-footer">
+  <div class="stats-footer-grid">
+    <div class="stats-item">
+      <h3>100+</h3>
+      <p>profiles created</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>2 Teams</h3>
+      <p>match setup supported</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>Live</h3>
+      <p>ball-by-ball scoring</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>&lt;1s</h3>
+      <p>local scoring response</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
+<section class="section-head">
+  <div>
+    <span class="eyebrow">RELATED NEWS</span>
+    <h2>Player Headlines</h2>
+  </div>
+</section>
+<section id="playerNews" class="stack-list"></section>
+
+<button onclick="event.stopPropagation(); toggleFavCard('${p.id}','player','${p.name}')">
+  ${isFavorite(p.id, "player") ? "â˜…" : "â˜†"}
+</button>
+<a href="favorites.html" data-nav="favorites">Favorites</a>
+
+
+
+
+
+
+

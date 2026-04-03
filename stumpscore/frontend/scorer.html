@@ -1,0 +1,423 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StumpScore - Match Creator</title>
+  <link rel="stylesheet" href="style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<script src="nav.js"></script>
+  
+
+  <main class="page">
+    <section class="hero-card">
+      <span class="eyebrow">MATCH MANAGEMENT</span>
+      <h2>Create Match, Create Profiles, Add Players</h2>
+      <p class="hero-status">
+        One organizer can create a match, create player profiles, and add players using profile ID or phone number.
+      </p>
+    </section>
+
+    <section class="content-grid" style="margin-top: 24px;">
+      <section>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">STEP 1</span>
+            <h2>Create Player Profile</h2>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="score-box">
+            <input id="profileName" placeholder="Player Name" />
+            <input id="profilePhone" placeholder="Phone Number" />
+            <input id="profileRole" placeholder="Role (Batter/Bowler/All-rounder)" />
+            <input id="profileBatting" placeholder="Batting Style" />
+            <input id="profileBowling" placeholder="Bowling Style" />
+            <button id="createProfileBtn">Create Profile</button>
+          </div>
+          <p id="profileMessage" class="meta" style="margin-top: 14px;"></p>
+        </div>
+
+        <div class="section-head" style="margin-top: 24px;">
+          <div>
+            <span class="eyebrow">PROFILES</span>
+            <h2>All Created Profiles</h2>
+          </div>
+        </div>
+        <div id="profilesList" class="stack-list"></div>
+      </section>
+
+      <aside>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">STEP 2</span>
+            <h2>Create Match</h2>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="score-box">
+            <input id="team1" placeholder="Team 1 Name" />
+            <input id="team2" placeholder="Team 2 Name" />
+            <input id="creatorId" placeholder="Created By (Organizer ID)" />
+            <button id="createMatchBtn">Create Match</button>
+          </div>
+          <p id="matchMessage" class="meta" style="margin-top: 14px;"></p>
+        </div>
+
+        <div class="section-head" style="margin-top: 24px;">
+          <div>
+            <span class="eyebrow">ACTIVE MATCH</span>
+            <h2>Current Match</h2>
+          </div>
+        </div>
+        <div id="activeMatchBox" class="search-results">
+          <div class="empty">No match created yet.</div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section-head" style="margin-top: 28px;">
+      <div>
+        <span class="eyebrow">STEP 3</span>
+        <h2>Add Players to Teams</h2>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <section class="hero-card">
+        <h3 style="margin-bottom: 14px;">Add to Team 1</h3>
+        <div class="score-box">
+          <input id="team1ProfileId" placeholder="Profile ID" />
+          <input id="team1Phone" placeholder="Or Phone Number" />
+          <button onclick="addPlayerToTeam('team1')">Add Player to Team 1</button>
+        </div>
+      </section>
+
+      <section class="hero-card">
+        <h3 style="margin-bottom: 14px;">Add to Team 2</h3>
+        <div class="score-box">
+          <input id="team2ProfileId" placeholder="Profile ID" />
+          <input id="team2Phone" placeholder="Or Phone Number" />
+          <button onclick="addPlayerToTeam('team2')">Add Player to Team 2</button>
+        </div>
+      </section>
+    </section>
+
+    <section class="section-head" style="margin-top: 28px;">
+      <div>
+        <span class="eyebrow">STEP 4</span>
+        <h2>Set Playing Lineup</h2>
+      </div>
+    </section>
+
+    <section class="hero-card">
+      <div class="score-box">
+        <input id="striker" placeholder="Striker Name" />
+        <input id="nonStriker" placeholder="Non-striker Name" />
+        <input id="bowler" placeholder="Bowler Name" />
+        <button id="setLineupBtn">Start Match</button>
+      </div>
+      <p id="lineupMessage" class="meta" style="margin-top: 14px;"></p>
+    </section>
+
+    <section class="section-head" style="margin-top: 28px;">
+      <div>
+        <span class="eyebrow">SQUADS</span>
+        <h2>Current Teams</h2>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <section>
+        <div class="hero-card">
+          <h3 id="team1Title">Team 1</h3>
+          <div id="team1Players" class="stack-list" style="margin-top: 14px;"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="hero-card">
+          <h3 id="team2Title">Team 2</h3>
+          <div id="team2Players" class="stack-list" style="margin-top: 14px;"></div>
+        </div>
+      </section>
+    </section>
+
+    <section style="margin-top: 28px;">
+      <button id="openScoringBtn" style="display:none;">Open Live Scoring Page</button>
+    </section>
+    <section class="panel-card" style="margin-top: 22px;">
+  <div class="panel-head">
+    <span class="eyebrow">AVAILABLE MATCHES</span>
+    <h3>Created Matches</h3>
+  </div>
+  <div id="matchesList" class="stack-list"></div>
+</section>
+<section class="panel-card" style="margin-top: 22px;">
+  <div class="panel-head">
+    <span class="eyebrow">PROFILE LOOKUP</span>
+    <h3>Find by Profile ID or Phone</h3>
+  </div>
+
+  <div class="form-grid">
+    <input id="lookupProfileId" placeholder="Profile ID" />
+    <input id="lookupPhone" placeholder="Phone Number" />
+    <button id="findProfileBtn">Find Profile</button>
+  </div>
+
+  <div id="lookupResult" style="margin-top:14px;"></div>
+</section>
+  </main>
+
+  <script>
+    const API = "http://127.0.0.1:9966";
+    let currentMatchId = null;
+
+    async function api(path, options = {}) {
+      const res = await fetch(`${API}${path}`, options);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Request failed");
+      return data;
+    }
+
+    function renderProfiles(profiles) {
+      const root = document.getElementById("profilesList");
+      if (!profiles.length) {
+        root.innerHTML = `<div class="empty">No profiles yet.</div>`;
+        return;
+      }
+
+      root.innerHTML = profiles.map(p => `
+        <article class="news-card">
+          <h4>${p.name}</h4>
+          <p class="meta">ID: ${p.id}</p>
+          <p class="meta">Phone: ${p.phone || "-"}</p>
+          <p class="meta">Role: ${p.role || "-"}</p>
+        </article>
+      `).join("");
+    }
+
+    function renderTeams(match) {
+      document.getElementById("team1Title").textContent = match.team1;
+      document.getElementById("team2Title").textContent = match.team2;
+
+      const t1 = document.getElementById("team1Players");
+      const t2 = document.getElementById("team2Players");
+
+      t1.innerHTML = match.team1_players.length
+        ? match.team1_players.map(p => `
+            <article class="news-card">
+              <h4>${p.name}</h4>
+              <p class="meta">${p.id}</p>
+              <p class="meta">${p.phone || "-"}</p>
+            </article>
+          `).join("")
+        : `<div class="empty">No players in Team 1 yet.</div>`;
+
+      t2.innerHTML = match.team2_players.length
+        ? match.team2_players.map(p => `
+            <article class="news-card">
+              <h4>${p.name}</h4>
+              <p class="meta">${p.id}</p>
+              <p class="meta">${p.phone || "-"}</p>
+            </article>
+          `).join("")
+        : `<div class="empty">No players in Team 2 yet.</div>`;
+    }
+
+    function renderActiveMatch(match) {
+      const root = document.getElementById("activeMatchBox");
+      root.innerHTML = `
+        <div class="search-block">
+          <h4>Match ID</h4>
+          <div class="search-item">${match.id}</div>
+        </div>
+        <div class="search-block">
+          <h4>Fixture</h4>
+          <div class="search-item">${match.team1} vs ${match.team2}</div>
+        </div>
+        <div class="search-block">
+          <h4>Status</h4>
+          <div class="search-item">${match.status}</div>
+        </div>
+      `;
+    }
+
+    async function loadProfiles() {
+      try {
+        const profiles = await api("/profiles");
+        renderProfiles(profiles);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadMatch() {
+      if (!currentMatchId) return;
+
+      try {
+        const match = await api(`/local-match/${currentMatchId}`);
+        renderActiveMatch(match);
+        renderTeams(match);
+
+        if (match.status === "live") {
+          document.getElementById("openScoringBtn").style.display = "inline-block";
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById("createProfileBtn").onclick = async () => {
+      try {
+        const payload = {
+          name: document.getElementById("profileName").value,
+          phone: document.getElementById("profilePhone").value,
+          role: document.getElementById("profileRole").value,
+          batting_style: document.getElementById("profileBatting").value,
+          bowling_style: document.getElementById("profileBowling").value
+        };
+
+        const profile = await api("/profiles/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById("profileMessage").textContent =
+          `Profile created: ${profile.name} (${profile.id})`;
+
+        loadProfiles();
+      } catch (err) {
+        document.getElementById("profileMessage").textContent = err.message;
+      }
+    };
+
+    document.getElementById("createMatchBtn").onclick = async () => {
+      try {
+        const payload = {
+          team1: document.getElementById("team1").value || "Team A",
+          team2: document.getElementById("team2").value || "Team B",
+          created_by: document.getElementById("creatorId").value || "creator_1"
+        };
+
+        const match = await api("/local-match/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        currentMatchId = match.id;
+        document.getElementById("matchMessage").textContent =
+          `Match created: ${match.id}`;
+
+        loadMatch();
+      } catch (err) {
+        document.getElementById("matchMessage").textContent = err.message;
+      }
+    };
+
+    async function addPlayerToTeam(team) {
+      if (!currentMatchId) {
+        alert("Create match first");
+        return;
+      }
+
+      try {
+        const profileIdInput = document.getElementById(`${team}ProfileId`);
+        const phoneInput = document.getElementById(`${team}Phone`);
+
+        const payload = {
+          team,
+          profile_id: profileIdInput.value,
+          phone: phoneInput.value
+        };
+
+        await api(`/local-match/${currentMatchId}/add-player`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        profileIdInput.value = "";
+        phoneInput.value = "";
+
+        loadMatch();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    document.getElementById("setLineupBtn").onclick = async () => {
+      if (!currentMatchId) {
+        alert("Create match first");
+        return;
+      }
+
+      try {
+        const payload = {
+          striker: document.getElementById("striker").value,
+          non_striker: document.getElementById("nonStriker").value,
+          bowler: document.getElementById("bowler").value
+        };
+
+        await api(`/local-match/${currentMatchId}/set-lineup`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById("lineupMessage").textContent =
+          "Lineup set. Match is now live.";
+
+        loadMatch();
+      } catch (err) {
+        document.getElementById("lineupMessage").textContent = err.message;
+      }
+    };
+
+    document.getElementById("openScoringBtn").onclick = () => {
+      if (currentMatchId) {
+        window.location.href = `local-match.html?id=${currentMatchId}`;
+      }
+    };
+
+    loadProfiles();
+  </script>
+
+<footer class="stats-footer">
+  <div class="stats-footer-grid">
+    <div class="stats-item">
+      <h3>100+</h3>
+      <p>profiles created</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>2 Teams</h3>
+      <p>match setup supported</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>Live</h3>
+      <p>ball-by-ball scoring</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>&lt;1s</h3>
+      <p>local scoring response</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
+
+
+
+
+
+
+

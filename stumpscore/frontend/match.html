@@ -1,0 +1,240 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+ <title>StumpScore - Match Center</title>
+  <link rel="stylesheet" href="style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<script>
+  const pageType = "match";
+</script>
+<script src="nav.js"></script>
+<body>
+   
+ <main class="page">
+  <section class="hero-card">
+    <span class="eyebrow">LIVE MATCH</span>
+    <h2 id="matchTitle">Loading match...</h2>
+    <p id="matchStatus" class="hero-status"></p>
+
+    <div id="heroScoreboard" class="hero-scoreboard"></div>
+  </section>
+
+  <section class="tabs">
+    <button class="tab active" data-tab="info">Info</button>
+    <button class="tab" data-tab="scorecard">Scorecard</button>
+    <button class="tab" data-tab="commentary">Commentary</button>
+    <button class="tab" data-tab="squads">Squads</button>
+  </section>
+
+  <section id="tab-info" class="tab-content active"></section>
+  <section id="tab-scorecard" class="tab-content"></section>
+  <section id="tab-commentary" class="tab-content"></section>
+  <section id="tab-squads" class="tab-content"></section>
+</main>
+
+  <script>
+    const API = "http://127.0.0.1:9966";
+    const params = new URLSearchParams(window.location.search);
+    const matchId = params.get("id");
+
+    async function api(path) {
+      const res = await fetch(`${API}${path}`);
+      if (!res.ok) throw new Error(`Request failed: ${path}`);
+      return res.json();
+    }
+
+    function renderHero(matchData, scoreData) {
+      const match = matchData.match || {};
+      const score = scoreData.score || match.score || [];
+
+      document.getElementById("matchTitle").textContent = match.name || "Match";
+      document.getElementById("matchStatus").textContent = match.status || "Live";
+      document.getElementById("venueText").textContent = match.venue || "Venue not available";
+      document.getElementById("infoText").textContent =
+        matchData.info?.pitchReport || "Live match information available.";
+
+      const root = document.getElementById("heroScoreboard");
+      if (!score.length) {
+        root.innerHTML = `
+          <div class="score-row">
+            <span>Status</span>
+            <strong>${match.status || "No score available"}</strong>
+          </div>
+        `;
+        return;
+      }
+
+      root.innerHTML = score.map(s => `
+        <div class="score-row">
+          <span>${s.inning || "Innings"}</span>
+          <strong>${s.r ?? 0}/${s.w ?? 0} (${s.o ?? 0})</strong>
+        </div>
+      `).join("");
+    }
+
+    function renderScore(scoreData, matchData) {
+      const root = document.getElementById("scoreGrid");
+      const match = matchData.match || {};
+      const score = scoreData.score || match.score || [];
+
+      if (!score.length) {
+        root.innerHTML = `
+          <div class="match-card">
+            <h4 class="match-title">Score not available</h4>
+            <p class="meta">${match.status || "No innings data available."}</p>
+          </div>
+        `;
+        return;
+      }
+
+      root.innerHTML = score.map(s => `
+        <article class="match-card">
+          <div class="card-top">
+            <span class="match-status-pill"><span class="live-dot"></span> Live</span>
+            <span class="match-type">${s.inning || "Innings"}</span>
+          </div>
+          <h4 class="match-title">${s.inning || "Score"}</h4>
+          <div class="score-box">
+            <div class="score-row"><span>Runs</span><strong>${s.r ?? 0}</strong></div>
+            <div class="score-row"><span>Wickets</span><strong>${s.w ?? 0}</strong></div>
+            <div class="score-row"><span>Overs</span><strong>${s.o ?? 0}</strong></div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderPrediction(prediction) {
+      const root = document.getElementById("predictionBox");
+      const entries = Object.entries(prediction.winProbability || {});
+
+      root.innerHTML = `
+        <div class="search-block">
+          <h4>Favorite</h4>
+          <div class="search-item">${prediction.favorite || "Unknown"}</div>
+        </div>
+        <div class="search-block">
+          <h4>Win Probability</h4>
+          ${entries.length
+            ? entries.map(([team, value]) => `<div class="search-item">${team}: ${value}%</div>`).join("")
+            : `<div class="search-item">No probability available</div>`}
+        </div>
+        <div class="search-block">
+          <h4>Reason</h4>
+          <div class="search-item">${prediction.reason || "No reasoning available."}</div>
+        </div>
+      `;
+    }
+
+    function renderCommentary(commentaryData) {
+      const root = document.getElementById("commentaryList");
+      const items = commentaryData.commentary || [];
+
+      if (!items.length) {
+        root.innerHTML = `
+          <article class="news-card">
+            <h4>No commentary available</h4>
+            <p class="meta">${commentaryData.message || "Commentary feed is unavailable."}</p>
+          </article>
+        `;
+        return;
+      }
+
+      root.innerHTML = items.map(item => `
+        <article class="news-card">
+          <div class="card-top">
+            <span class="match-status-pill"><span class="live-dot"></span> ${item.over || "Over"}</span>
+            <span class="match-type">Update</span>
+          </div>
+          <h4>${item.text || "Play update"}</h4>
+        </article>
+      `).join("");
+    }
+
+    async function loadMatch() {
+      try {
+        const [matchData, scoreData, predictionData, commentaryData] = await Promise.all([
+          api(`/matches/${matchId}`),
+          api(`/matches/${matchId}/scorecard`),
+          api(`/predictions/${matchId}`),
+          api(`/matches/${matchId}/commentary`)
+        ]);
+
+        renderHero(matchData, scoreData);
+        renderScore(scoreData, matchData);
+        renderPrediction(predictionData);
+        renderCommentary(commentaryData);
+      } catch (err) {
+        console.error(err);
+        document.getElementById("matchTitle").textContent = "Match not found";
+        document.getElementById("matchStatus").textContent = "Could not load match details.";
+        document.getElementById("scoreGrid").innerHTML = `<div class="empty">Scorecard unavailable.</div>`;
+        document.getElementById("predictionBox").innerHTML = `<div class="empty">Prediction unavailable.</div>`;
+        document.getElementById("commentaryList").innerHTML = `<div class="empty">Commentary unavailable.</div>`;
+      }
+    }
+
+    loadMatch();
+    setInterval(loadMatch, 15000);
+  </script>
+
+<footer class="stats-footer">
+  <div class="stats-footer-grid">
+    <div class="stats-item">
+      <h3>100+</h3>
+      <p>profiles created</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>2 Teams</h3>
+      <p>match setup supported</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>Live</h3>
+      <p>ball-by-ball scoring</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>&lt;1s</h3>
+      <p>local scoring response</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
+<section class="section-head">
+  <div>
+    <span class="eyebrow">MATCH NEWS</span>
+    <h2>Related Headlines</h2>
+  </div>
+</section>
+<section id="matchNews" class="stack-list"></section>
+
+<script>
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+  };
+});
+</script>
+<button onclick="event.stopPropagation(); toggleFavCard('${p.id}','player','${p.name}')">
+  ${isFavorite(p.id, "player") ? "â˜…" : "â˜†"}
+</button>
+<button onclick="event.stopPropagation(); toggleFavCard('${m.id}','match','${m.name}')">
+  ${isFavorite(m.id, "match") ? "â˜…" : "â˜†"}
+</button>
+<a href="favorites.html" data-nav="favorites">Favorites</a>
+
+
+
+
+
+
+
