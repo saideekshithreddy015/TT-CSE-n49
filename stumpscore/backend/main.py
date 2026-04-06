@@ -806,4 +806,7 @@ def home():
 @app.get("/{page_name}")
 def serve_page(page_name: str):
     return FileResponse(page_name)
+from fastapi.staticfiles import StaticFiles
+
+app.mount("/", StaticFiles(directory=".", html=True), name="site")
 
