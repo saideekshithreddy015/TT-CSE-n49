@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -225,10 +225,10 @@ document.querySelectorAll(".tab").forEach(btn => {
 });
 </script>
 <button onclick="event.stopPropagation(); toggleFavCard('${p.id}','player','${p.name}')">
-  ${isFavorite(p.id, "player") ? "â˜…" : "â˜†"}
+  ${isFavorite(p.id, "player") ? "★" : "☆"}
 </button>
 <button onclick="event.stopPropagation(); toggleFavCard('${m.id}','match','${m.name}')">
-  ${isFavorite(m.id, "match") ? "â˜…" : "â˜†"}
+  ${isFavorite(m.id, "match") ? "★" : "☆"}
 </button>
 <a href="favorites.html" data-nav="favorites">Favorites</a>
 

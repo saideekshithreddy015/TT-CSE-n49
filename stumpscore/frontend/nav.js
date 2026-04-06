@@ -1,4 +1,4 @@
-﻿async function loadNav() {
+async function loadNav() {
   try {
     const res = await fetch("nav.html");
     const html = await res.text();

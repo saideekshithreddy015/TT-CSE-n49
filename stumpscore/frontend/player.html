@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -81,10 +81,10 @@
 
     function renderOverview(player) {
       document.getElementById("playerName").textContent = player.name || "Player";
-      document.getElementById("playerMeta").textContent = `${player.country || ""} â€¢ ${player.role || ""}`;
+      document.getElementById("playerMeta").textContent = `${player.country || ""} • ${player.role || ""}`;
       document.getElementById("countryText").textContent = player.country || "Country";
       document.getElementById("styleText").textContent =
-        `${player.battingStyle || "Batting style N/A"} â€¢ ${player.bowlingStyle || "Bowling style N/A"}`;
+        `${player.battingStyle || "Batting style N/A"} • ${player.bowlingStyle || "Bowling style N/A"}`;
 
       document.getElementById("playerOverview").innerHTML = `
         <div class="score-row">
@@ -243,7 +243,7 @@
 <section id="playerNews" class="stack-list"></section>
 
 <button onclick="event.stopPropagation(); toggleFavCard('${p.id}','player','${p.name}')">
-  ${isFavorite(p.id, "player") ? "â˜…" : "â˜†"}
+  ${isFavorite(p.id, "player") ? "★" : "☆"}
 </button>
 <a href="favorites.html" data-nav="favorites">Favorites</a>
 

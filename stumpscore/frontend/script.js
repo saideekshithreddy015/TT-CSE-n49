@@ -1,4 +1,4 @@
-﻿const API_BASE = "https://tt-cse-n49-2.onrender.com";
+const API_BASE = "https://tt-cse-n49-2.onrender.com";
 const WS_BASE = "wss://tt-cse-n49-2.onrender.com";
 
 let currentFilter = "all";
@@ -160,7 +160,7 @@ function renderMatches(matches) {
 
     const favoriteButton = m.id && m.id !== "demo1"
       ? `<button class="fav-btn" onclick="event.stopPropagation(); toggleFavCard('${m.id}','match',${JSON.stringify(m.name || "Match")})">
-          ${isFavorite(m.id, "match") ? "â˜…" : "â˜†"}
+          ${isFavorite(m.id, "match") ? "★" : "☆"}
         </button>`
       : "";
 
@@ -233,7 +233,7 @@ function renderPlayers(players) {
   players.forEach((p) => {
     const favoriteButton = `
       <button class="fav-btn" onclick="event.stopPropagation(); toggleFavCard('${p.id}','player',${JSON.stringify(p.name)})">
-        ${isFavorite(p.id, "player") ? "â˜…" : "â˜†"}
+        ${isFavorite(p.id, "player") ? "★" : "☆"}
       </button>
     `;
 
@@ -251,7 +251,7 @@ function renderPlayers(players) {
       <h4>${p.name}</h4>
       <div class="player-country">${p.country}</div>
       <div class="player-role">${p.role}</div>
-      <div class="player-style">${p.battingStyle || ""} ${p.bowlingStyle ? "â€¢ " + p.bowlingStyle : ""}</div>
+      <div class="player-style">${p.battingStyle || ""} ${p.bowlingStyle ? "• " + p.bowlingStyle : ""}</div>
     `;
     root.appendChild(el);
   });
