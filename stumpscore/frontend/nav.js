@@ -21,3 +21,4 @@ function highlightActive() {
 }
 
 window.addEventListener("DOMContentLoaded", loadNav);
+

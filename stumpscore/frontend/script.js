@@ -1,5 +1,5 @@
-﻿const API_BASE = "http://127.0.0.1:9966";
-const WS_BASE = "ws://127.0.0.1:9966";
+﻿const API_BASE = "https://tt-cse-n49-2.onrender.com";
+const WS_BASE = "wss://tt-cse-n49-2.onrender.com";
 
 let currentFilter = "all";
 let cachedMatches = [];
@@ -479,3 +479,4 @@ document.getElementById("findProfileBtn").onclick = async () => {
 
   run();
 })();
+
