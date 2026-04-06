@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StumpScore - Live</title>
+  <link rel="stylesheet" href="/static/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  
+
+  <main class="page">
+    <section class="toolbar-card">
+      <div class="toolbar-tabs">
+        <button class="nav-btn active" data-filter="all">All</button>
+        <button class="nav-btn" data-filter="international">International</button>
+        <button class="nav-btn" data-filter="league">League / IPL</button>
+      </div>
+
+      <div id="socketStatus" class="connection-badge">
+        Connecting...
+      </div>
+    </section>
+
+    <section class="section-head">
+      <div>
+        <span class="eyebrow">LIVE NOW</span>
+        <h2>Match Center</h2>
+      </div>
+    </section>
+
+    <div id="liveStrip" class="live-strip"></div>
+
+    <section class="section-head" style="margin-top: 24px;">
+      <div>
+        <span class="eyebrow">SCORES</span>
+        <h2>Ongoing Matches</h2>
+      </div>
+    </section>
+
+    <div id="liveMatches" class="cards-grid"></div>
+  </main>
+
+  
+
+  <script>
+    const pageType = "live";
+  </script>
+  <script src="/static/script.js"></script>
+  <script src="/static/nav.js"></script>
+
+<footer class="stats-footer">
+  <div class="stats-footer-grid">
+    <div class="stats-item">
+      <h3>100+</h3>
+      <p>profiles created</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>2 Teams</h3>
+      <p>match setup supported</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>Live</h3>
+      <p>ball-by-ball scoring</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>&lt;1s</h3>
+      <p>local scoring response</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
+<a href="scorer.html">Scorer</a>
+
+
+
+
+
+
+
+
+

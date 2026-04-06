@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StumpScore - Local Match</title>
+  <link rel="stylesheet" href="/static/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<script src="/static/nav.js"></script>
+  
+
+  <main class="page">
+    <section class="hero-card">
+      <span class="eyebrow">LIVE LOCAL MATCH</span>
+      <h2 id="matchTitle">Loading...</h2>
+      <p id="scoreText" class="hero-status">Loading score...</p>
+      <div id="metaText" class="meta" style="margin-top: 10px;"></div>
+    </section>
+
+    <section class="section-head" style="margin-top: 24px;">
+      <div>
+        <span class="eyebrow">SCORING PANEL</span>
+        <h2>Ball by Ball</h2>
+      </div>
+    </section>
+
+    <div class="cards-grid" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));">
+      <button onclick="addBall(0)">0</button>
+      <button onclick="addBall(1)">1</button>
+      <button onclick="addBall(2)">2</button>
+      <button onclick="addBall(3)">3</button>
+      <button onclick="addBall(4)">4</button>
+      <button onclick="addBall(6)">6</button>
+      <button onclick="addWicket()">Wicket</button>
+    </div>
+
+    <section class="content-grid" style="margin-top: 28px;">
+      <section>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">OVER LOG</span>
+            <h2>Ball History</h2>
+          </div>
+        </div>
+        <div id="ballsList" class="stack-list"></div>
+      </section>
+
+      <aside>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">LIVE PLAYERS</span>
+            <h2>Current On Field</h2>
+          </div>
+        </div>
+        <div class="search-results">
+          <div class="search-block">
+            <h4>Striker</h4>
+            <div class="search-item" id="strikerBox">-</div>
+          </div>
+          <div class="search-block">
+            <h4>Non-striker</h4>
+            <div class="search-item" id="nonStrikerBox">-</div>
+          </div>
+          <div class="search-block">
+            <h4>Bowler</h4>
+            <div class="search-item" id="bowlerBox">-</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section-head" style="margin-top: 28px;">
+      <div>
+        <span class="eyebrow">SQUADS</span>
+        <h2>Teams</h2>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <section>
+        <div class="hero-card">
+          <h3 id="team1Title">Team 1</h3>
+          <div id="team1Players" class="stack-list" style="margin-top: 14px;"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="hero-card">
+          <h3 id="team2Title">Team 2</h3>
+          <div id="team2Players" class="stack-list" style="margin-top: 14px;"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const API = "https://tt-cse-n49-2.onrender.com";
+    const params = new URLSearchParams(window.location.search);
+    const matchId = params.get("id");
+
+    async function api(path, options = {}) {
+      const res = await fetch(`${API}${path}`, options);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Request failed");
+      return data;
+    }
+
+    function renderTeams(match) {
+      document.getElementById("team1Title").textContent = match.team1;
+      document.getElementById("team2Title").textContent = match.team2;
+
+      const t1 = document.getElementById("team1Players");
+      const t2 = document.getElementById("team2Players");
+
+      t1.innerHTML = match.team1_players.length
+        ? match.team1_players.map(p => `
+            <article class="news-card">
+              <h4>${p.name}</h4>
+              <p class="meta">${p.role || "-"}</p>
+              <p class="meta">${p.phone || "-"}</p>
+            </article>
+          `).join("")
+        : `<div class="empty">No players in Team 1 yet.</div>`;
+
+      t2.innerHTML = match.team2_players.length
+        ? match.team2_players.map(p => `
+            <article class="news-card">
+              <h4>${p.name}</h4>
+              <p class="meta">${p.role || "-"}</p>
+              <p class="meta">${p.phone || "-"}</p>
+            </article>
+          `).join("")
+        : `<div class="empty">No players in Team 2 yet.</div>`;
+    }
+
+    async function loadMatch() {
+      const match = await api(`/local-match/${matchId}`);
+      const scorecard = await api(`/local-match/${matchId}/scorecard`);
+
+      document.getElementById("matchTitle").textContent = `${match.team1} vs ${match.team2}`;
+      document.getElementById("scoreText").textContent = `${scorecard.score} in ${scorecard.overs} overs`;
+      document.getElementById("metaText").innerHTML = `
+  Status: <span style="color:${match.status === "live" ? "green" : "orange"}; font-weight:700;">
+    ${match.status.toUpperCase()}
+  </span>
+`;
+
+      document.getElementById("strikerBox").textContent = scorecard.striker || "-";
+      document.getElementById("nonStrikerBox").textContent = scorecard.non_striker || "-";
+      document.getElementById("bowlerBox").textContent = scorecard.bowler || "-";
+
+      document.getElementById("ballsList").innerHTML = scorecard.balls.length
+        ? scorecard.balls.slice().reverse().map(b => `
+            <article class="news-card">
+              <h4>Ball ${b.ball_no}</h4>
+              <p class="meta">Runs: ${b.runs}</p>
+              <p class="meta">${b.wicket ? "WICKET" : "No wicket"}</p>
+              <p class="meta">Striker: ${b.striker || "-"}</p>
+              <p class="meta">Bowler: ${b.bowler || "-"}</p>
+            </article>
+          `).join("")
+        : `<div class="empty">No balls recorded yet.</div>`;
+
+      renderTeams(match);
+    }
+
+    async function addBall(runs) {
+      await api(`/local-match/${matchId}/ball`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ runs, wicket: false })
+      });
+      loadMatch();
+    }
+
+    async function addWicket() {
+      await api(`/local-match/${matchId}/ball`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ runs: 0, wicket: true })
+      });
+      loadMatch();
+    }
+
+    loadMatch();
+setInterval(loadMatch, 3000);
+
+  </script>
+
+<footer class="stats-footer">
+  <div class="stats-footer-grid">
+    <div class="stats-item">
+      <h3>100+</h3>
+      <p>profiles created</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>2 Teams</h3>
+      <p>match setup supported</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>Live</h3>
+      <p>ball-by-ball scoring</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>&lt;1s</h3>
+      <p>local scoring response</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

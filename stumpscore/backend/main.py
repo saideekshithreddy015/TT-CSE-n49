@@ -790,3 +790,20 @@ def get_local_match(match_id: str):
     return local_matches[match_id]
 
 
+
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+# serve all static files (css, js, html)
+app.mount("/static", StaticFiles(directory="."), name="static")
+
+# homepage
+@app.get("/")
+def home():
+    return FileResponse("index.html")
+
+# serve any page dynamically
+@app.get("/{page_name}")
+def serve_page(page_name: str):
+    return FileResponse(page_name)
+

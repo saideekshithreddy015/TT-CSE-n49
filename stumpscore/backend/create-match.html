@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StumpScore - Create Match</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<script src="/static/nav.js"></script>
+  
+
+  <main class="page">
+    <section class="hero-card">
+      <span class="eyebrow">STEP 1</span>
+      <h2>Create Match</h2>
+      <p class="hero-status">
+        Start by creating a match. After this, youâ€™ll move to team setup for Team 1 and Team 2.
+      </p>
+    </section>
+
+    <section class="panel-card" style="margin-top: 24px;">
+      <div class="panel-head">
+        <span class="eyebrow">MATCH DETAILS</span>
+        <h3>Enter basic information</h3>
+      </div>
+
+      <div class="form-grid">
+        <input id="team1Name" placeholder="Team 1 Name" />
+        <input id="team2Name" placeholder="Team 2 Name" />
+        <input id="createdBy" placeholder="Created By / Organizer ID" />
+        <button id="createMatchBtn">Create Match</button>
+      </div>
+
+      <p id="messageBox" class="meta" style="margin-top: 14px;"></p>
+    </section>
+
+    <section class="panel-card" style="margin-top: 24px;">
+      <div class="panel-head">
+        <span class="eyebrow">CREATED MATCHES</span>
+        <h3>Available Matches</h3>
+      </div>
+
+      <div id="matchesList" class="stack-list"></div>
+    </section>
+  </main>
+
+  <footer class="clean-footer">
+    <div class="clean-footer-inner">
+      <p>StumpScore â€” real-time cricket and local match scoring.</p>
+      <span>Â© 2026</span>
+    </div>
+  </footer>
+
+  <script>
+    const API = "https://tt-cse-n49-2.onrender.com";
+
+    async function api(path, options = {}) {
+      const res = await fetch(`${API}${path}`, options);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Request failed");
+      return data;
+    }
+
+    function renderMatches(matches) {
+      const root = document.getElementById("matchesList");
+
+      if (!matches.length) {
+        root.innerHTML = `<div class="empty">No local matches created yet.</div>`;
+        return;
+      }
+
+      root.innerHTML = matches.map(m => `
+        <article class="news-card">
+          <div class="card-top">
+            <span class="match-type">${m.id}</span>
+            <button onclick="goToTeamSetup('${m.id}')">Open</button>
+          </div>
+          <h4>${m.team1_name} vs ${m.team2_name}</h4>
+          <p class="meta">Created by: ${m.created_by}</p>
+          <p class="meta">Status: ${m.status}</p>
+        </article>
+      `).join("");
+    }
+
+    async function loadMatches() {
+      try {
+        const matches = await api("/local-match");
+        renderMatches(matches);
+      } catch (err) {
+        document.getElementById("matchesList").innerHTML =
+          `<div class="empty">Failed to load matches.</div>`;
+      }
+    }
+
+    function goToTeamSetup(matchId) {
+      window.location.href = `team-setup.html?match_id=${matchId}&team=team1`;
+    }
+
+    document.getElementById("createMatchBtn").onclick = async () => {
+      try {
+        const payload = {
+          team1_name: document.getElementById("team1Name").value || "Team 1",
+          team2_name: document.getElementById("team2Name").value || "Team 2",
+          created_by: document.getElementById("createdBy").value || "creator_1"
+        };
+
+        const match = await api("/local-match/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        document.getElementById("messageBox").textContent =
+          `Match created successfully: ${match.id}`;
+
+        setTimeout(() => {
+          window.location.href = `team-setup.html?match_id=${match.id}&team=team1`;
+        }, 800);
+
+      } catch (err) {
+        document.getElementById("messageBox").textContent = err.message;
+      }
+    };
+
+    loadMatches();
+  </script>
+</body>
+</html>
+
+
+

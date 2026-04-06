@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StumpScore - Profiles</title>
+  <link rel="stylesheet" href="/static/style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<script src="/static/nav.js"></script>
+  
+
+  <main class="page">
+    <section class="hero-card">
+      <span class="eyebrow">PROFILE DIRECTORY</span>
+      <h2>All Created Local Profiles</h2>
+      <p class="hero-status">
+        Search by player name, phone number, role, or use profile ID while adding players to a local match.
+      </p>
+    </section>
+
+    <section class="toolbar-card" style="margin-top: 22px;">
+      <div class="search-wrap" style="width: 100%;">
+        <input id="searchInput" type="text" placeholder="Search name, phone, role or profile ID..." />
+        <button id="searchBtn">Search</button>
+      </div>
+    </section>
+
+    <section class="section-head">
+      <div>
+        <span class="eyebrow">DIRECTORY</span>
+        <h2>Created Profiles</h2>
+      </div>
+    </section>
+
+    <section id="profilesList" class="stack-list"></section>
+  </main>
+
+ 
+
+  <script>
+    const API = "https://tt-cse-n49-2.onrender.com";
+    let allProfiles = [];
+
+    async function api(path) {
+      const res = await fetch(`${API}${path}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Request failed");
+      return data;
+    }
+
+    function renderProfiles(list) {
+      const root = document.getElementById("profilesList");
+
+      if (!list.length) {
+        root.innerHTML = `<div class="empty">No profiles found.</div>`;
+        return;
+      }
+
+      root.innerHTML = list.map(p => `
+        <article class="news-card">
+          <div class="card-top">
+            <span class="match-type">Profile</span>
+            <span class="player-country">${p.id}</span>
+          </div>
+          <h4>${p.name || "Unnamed Player"}</h4>
+          <p class="meta">Phone: ${p.phone || "-"}</p>
+          <p class="meta">Role: ${p.role || "-"}</p>
+          <p class="meta">Batting: ${p.batting_style || "-"}</p>
+          <p class="meta">Bowling: ${p.bowling_style || "-"}</p>
+        </article>
+      `).join("");
+    }
+
+    function runSearch() {
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+
+      if (!q) {
+        renderProfiles(allProfiles);
+        return;
+      }
+
+      const filtered = allProfiles.filter(p =>
+        (p.id || "").toLowerCase().includes(q) ||
+        (p.name || "").toLowerCase().includes(q) ||
+        (p.phone || "").toLowerCase().includes(q) ||
+        (p.role || "").toLowerCase().includes(q) ||
+        (p.batting_style || "").toLowerCase().includes(q) ||
+        (p.bowling_style || "").toLowerCase().includes(q)
+      );
+
+      renderProfiles(filtered);
+    }
+
+    async function loadProfiles() {
+      try {
+        const profiles = await api("/profiles");
+        allProfiles = profiles;
+        renderProfiles(allProfiles);
+      } catch (err) {
+        console.error(err);
+        document.getElementById("profilesList").innerHTML =
+          `<div class="empty">Failed to load profiles.</div>`;
+      }
+    }
+
+    document.getElementById("searchBtn").addEventListener("click", runSearch);
+    document.getElementById("searchInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") runSearch();
+    });
+
+    loadProfiles();
+  </script>
+
+<footer class="stats-footer">
+  <div class="stats-footer-grid">
+    <div class="stats-item">
+      <h3>100+</h3>
+      <p>profiles created</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>2 Teams</h3>
+      <p>match setup supported</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>Live</h3>
+      <p>ball-by-ball scoring</p>
+    </div>
+
+    <div class="stats-item">
+      <h3>&lt;1s</h3>
+      <p>local scoring response</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>
+
+
+
+
+
+
+
+
